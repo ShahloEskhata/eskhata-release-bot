@@ -1,0 +1,10 @@
+# Запуск на сервере: docker compose up -d --build
+services:
+    release-bot:
+        build: .
+        container_name: release-bot
+        restart: unless-stopped # поднимается после падения и перезагрузки сервера
+        env_file: .env
+        volumes:
+            - ./data:/app/data # состояние и копии не пропадают при пересборке
+            - ./testers.json:/app/testers.json # правится на сервере, затем /reload в группе

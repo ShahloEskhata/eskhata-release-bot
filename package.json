@@ -1,0 +1,14 @@
+{
+    "name": "eskhata-release-bot",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "start": "node --use-system-ca --env-file=.env src/bot.js",
+        "test": "node --test test/*.test.js"
+    },
+    "dependencies": {
+        "@grammyjs/auto-retry": "^2.0.2",
+        "grammy": "^1.30.0"
+    }
+}

@@ -1,0 +1,11 @@
+[
+    { "name": "Daler Zabirov", "username": "dzabirovwork", "titles": ["Сбережения и накопления"], "projects": ["SN"] },
+    { "name": "Aishabibi", "username": "aishabb21", "titles": ["P2P Эквайринг"], "projects": ["PTOPA"] },
+    { "name": "Elmir", "username": "esxxx1", "titles": ["Денежные переводы"], "projects": ["MT"] },
+    { "name": "Amir", "username": "ab_amrr", "titles": ["Лояльность"], "projects": ["LOYAL"] },
+    { "name": "Damir Yermanov", "username": "yermadam", "titles": ["Junior"], "projects": ["EJ"] },
+    { "name": "Sadaf", "username": "sadafqa", "titles": ["Кредиты наличными"], "projects": ["CNOO"] },
+    { "name": "Odilchon", "username": "odiljon_95", "titles": ["Eskhata Online Core"], "projects": ["EOC"] },
+    { "name": "Faridmehr", "username": "FaridmehrQA", "titles": ["Eskhata Merchant Core"], "projects": ["EMC"] },
+    { "name": "Nargis", "username": "shahnoza_qa", "titles": ["Eskhata Merchant Core"], "projects": ["EMC"] }
+]

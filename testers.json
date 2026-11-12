@@ -1,0 +1,122 @@
+[
+    {
+        "name": "Daler Zabirov",
+        "username": "dzabirovwork",
+        "titles": ["Сбережения и накопления"],
+        "projects": ["SN"]
+    },
+    {
+        "name": "Aishabibi Zhilibayeva",
+        "username": "aishabb21",
+        "titles": ["P2P Эквайринг"],
+        "projects": ["PTOPA"]
+    },
+    {
+        "name": "Amir",
+        "username": "ab_amrr",
+        "titles": ["Лояльность"],
+        "projects": ["LOYAL"]
+    },
+    {
+        "name": "Yasmin Jaborova",
+        "username": "yasmin_ji",
+        "titles": ["Mobile Platform"],
+        "projects": ["MP"]
+    },
+    {
+        "name": "Damir Yermanov",
+        "username": "yermadam",
+        "titles": ["Junior"],
+        "projects": ["EJ"]
+    },
+    {
+        "name": "Садаф",
+        "username": "sadafqa",
+        "titles": ["Кредиты наличными"],
+        "projects": ["CNOO"]
+    },
+    {
+        "name": "Одилчон",
+        "username": "odiljon_95",
+        "titles": ["Eskhata Online Core"],
+        "projects": ["EOC"]
+    },
+    {
+        "name": "Faridmehr Eshonov",
+        "username": "FaridmehrQA",
+        "titles": ["Eskhata Merchant Core"],
+        "projects": ["EMC"]
+    },
+    {
+        "name": "Наргис",
+        "username": "Nargis_Mirzoeva",
+        "titles": ["Открытие счета, РКО и депозиты ЮЛ и ИП"],
+        "projects": ["RKO"]
+    },
+    {
+        "name": "Айнур",
+        "username": "QAinur",
+        "titles": ["CVM"],
+        "projects": ["CVM"]
+    },
+    {
+        "name": "Umedjon",
+        "username": "UmedjonQA",
+        "titles": ["История и анализ финансов"],
+        "projects": ["EOH"]
+    },
+    {
+        "name": "Daler",
+        "username": "Daleron4",
+        "titles": ["Кредитование сегмента Микро"],
+        "projects": ["SM"]
+    },
+    {
+        "name": "Elmir Salmanov",
+        "username": "esxxx1",
+        "titles": ["Денежные переводы и P2P"],
+        "projects": ["MT"]
+    },
+    {
+        "name": "Aslambek Khalimov",
+        "username": "halimov17",
+        "titles": ["BNPL"],
+        "projects": ["BNPL"]
+    },
+    {
+        "name": "Mavzuna",
+        "username": "dorimenah",
+        "titles": ["Lifestyle"],
+        "projects": ["ELS"]
+    },
+    {
+        "name": "Muhammad",
+        "username": "tg_mish",
+        "titles": ["KYC"],
+        "projects": ["KYC"]
+    },
+    {
+        "name": "Safia Pochoeva",
+        "username": "pochoevasafia",
+        "titles": ["Автокредит"],
+        "projects": ["EA"]
+    },
+    {
+        "name": "Ilya",
+        "username": "x1LeR999",
+        "titles": ["Онбординг и активация"],
+        "projects": ["EOA"]
+    },
+    {
+        "name": "Madi",
+        "username": "madisakh772",
+        "titles": ["Дебетовые карты"],
+            "projects": ["DEBC"]
+    },
+    {
+        "name": "Mavzuna",
+        "username": "dorimenah",
+        "titles": ["Govtech"],
+        "projects": ["GT"]
+    }       
+]
