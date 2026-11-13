@@ -545,6 +545,10 @@ test('после «можно выпускать» кнопка объявляе
     assert.equal(dm.reply_markup.inline_keyboard[0][0].callback_data, `l:${id}:go`);
 
     await t.press(ADMIN, `l:${id}:go`);
+    // сначала админ видит список задач и ничего не уходит в группу
+    assert.match(t.sent('sendMessage').at(-1).text, /Что войдёт/);
+    assert.ok(!rel.liveAt);
+    await t.press(ADMIN, `e:${id}:ok`);
     assert.match(t.sent('sendMessage').at(-1).text, /Коллеги, сервер переключен/);
     assert.ok(rel.liveAt);
 
@@ -555,6 +559,7 @@ test('после «можно выпускать» кнопка объявляе
     assert.deepEqual(t2.sent('sendMessage').at(-1).reply_markup.inline_keyboard.flat().map((b) => b.callback_data), [`l:${r2.id}:exclude`, `l:${r2.id}:force`]);
     await t2.press(ADMIN, `l:${r2.id}:exclude`);
     assert.equal(r2.rel.tasks[1].status, 'excluded');
+    await t2.press(ADMIN, `e:${r2.id}:ok`);
     const live = t2.sent('sendMessage').at(-1).text;
     assert.match(live, /сервер переключен/);
     assert.doesNotMatch(live, /SN-543/);
@@ -594,6 +599,7 @@ test('🚧 «Задача не готова»: не ждём, не напоми�
     assert.ok(t.sent('sendMessage').some((p) => /Не готовы/.test(p.text) && /SN-561/.test(p.text)));
 
     await t.press(ADMIN, `l:${id}:go`);
+    await t.press(ADMIN, `e:${id}:ok`);
     const live = t.sent('sendMessage').at(-1).text;
     assert.doesNotMatch(live, /SN-561/);
     assert.match(live, /SN-543/);
@@ -854,4 +860,31 @@ test('/log показывает действия админов; по понед
     assert.equal(weekly().length, 1);
     await t.app.tick(mon10 + 60_000);
     assert.equal(weekly().length, 1);
+});
+
+test('перед объявлением админ убирает задачи кнопками в личке: переключатель, отмена, чужой не может', async () => {
+    const t = setup();
+    const { rel, id } = await startRelease(t, '[SN-561] - a\n[SN-543] - b');
+    await t.press(DALER, `r:${id}:0:na`);
+    await t.press(DALER, `r:${id}:1:na`);
+    await t.press(ADMIN, `l:${id}:go`);
+
+    await t.press(DALER, `e:${id}:t:1`);
+    assert.equal(t.sent('answerCallbackQuery').at(-1).show_alert, true);
+    await t.press(ADMIN, `e:${id}:t:1`); // убрали SN-543 (например, на код-ревью)
+    const kb = t.sent('editMessageText').at(-1).reply_markup.inline_keyboard.flat();
+    assert.ok(kb.some((b) => b.text.startsWith('🚫') && b.text.includes('SN-543')));
+    assert.ok(kb.some((b) => /Отправить в группу \(1\)/.test(b.text)));
+
+    await t.press(ADMIN, `e:${id}:no`);
+    assert.ok(!rel.liveAt);
+    assert.equal(rel.tasks[1].status, 'na');
+
+    await t.press(ADMIN, `l:${id}:go`);
+    await t.press(ADMIN, `e:${id}:t:1`);
+    await t.press(ADMIN, `e:${id}:ok`);
+    const live = t.sent('sendMessage').at(-1).text;
+    assert.match(live, /SN-561/);
+    assert.doesNotMatch(live, /SN-543/);
+    assert.equal(rel.tasks[1].status, 'excluded');
 });

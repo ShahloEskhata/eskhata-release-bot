@@ -565,7 +565,8 @@ export function createApp(opts) {
         if (!guard(ctx)) return;
         const rel = activeRelease(ctx.chat.id) || latestRelease(ctx.chat.id);
         if (!rel) return ctx.reply('Релизов пока нет.');
-        await announceLive(ctx, rel, { force: /\bforce\b/i.test(ctx.match) });
+        const force = /\bforce\b/i.test(ctx.match);
+        await announceLive(ctx, rel, { force, direct: force }); // «/live force» шлёт сразу, без выбора задач
     });
 
     // Кнопки «🚀 Сервер переключен» (после «можно выпускать») и выбор по незакрытым задачам
@@ -598,7 +599,7 @@ export function createApp(opts) {
         return d ? ` — ${esc(d.length > 70 ? `${d.slice(0, 67)}…` : d)}` : '';
     };
 
-    async function announceLive(ctx, rel, { force }) {
+    async function announceLive(ctx, rel, { force, direct = false }) {
         const open = rel.tasks.filter((t) => t.status === 'pending' || t.status === 'await' || t.status === 'bad');
         if (open.length && !force) {
             const list = (arr) => arr.map((t) => `• ${esc(label(t))}${short(t)}`).join('\n');
@@ -625,7 +626,76 @@ export function createApp(opts) {
                 reply_markup: new InlineKeyboard().text('🔁 Отправить ещё раз', `l:${rel.id}:force`),
             });
         }
+        // перед отправкой админ в личке может убрать задачи, выпавшие из релиза на код-ревью
+        if (!direct) return showLiveEditor(ctx, rel, { fresh: true });
+        return sendLive(ctx, rel);
+    }
 
+    const editable = (rel) => rel.tasks.map((task, idx) => ({ task, idx })).filter(({ task }) => !OUT.includes(task.status));
+
+    // Список задач будущего объявления: нажатие на задачу переключает ✅ входит / 🚫 не входит (пока ничего не отправлено)
+    async function showLiveEditor(ctx, rel, { fresh = false } = {}) {
+        if (fresh) rel.liveSkip = [];
+        const skip = new Set(rel.liveSkip || []);
+        const items = editable(rel);
+        if (!items.length) return ctx.reply('Все задачи релиза исключены — объявлять нечего.');
+
+        const kb = new InlineKeyboard();
+        items.slice(0, MAX_BUTTONS * 2).forEach(({ task, idx }, i) => {
+            kb.text(`${skip.has(idx) ? '🚫' : '✅'} ${short24(label(task))}`, `e:${rel.id}:t:${idx}`);
+            if (i % 2) kb.row();
+        });
+        const included = items.length - items.filter(({ idx }) => skip.has(idx)).length;
+        kb.row().text(`🚀 Отправить в группу (${included})`, `e:${rel.id}:ok`).row().text('Отмена', `e:${rel.id}:no`);
+        const text =
+            `🚀 <b>Что войдёт в сообщение «сервер переключен»?</b>\n«${esc(rel.title)}»\n` +
+            'Нажмите на задачу, которую убрали из релиза (например, на код-ревью): она станет 🚫 и в группу не попадёт.' +
+            (items.length > MAX_BUTTONS * 2 ? `\nПоказаны первые ${MAX_BUTTONS * 2} из ${items.length}, остальные можно исключить командой /exclude.` : '');
+        const extra = { ...HTML, reply_markup: kb };
+        if (fresh) return ctx.reply(text, extra);
+        return ctx.editMessageText(text, extra).catch(() => {});
+    }
+
+    bot.callbackQuery(/^e:([^:]+):(t:(\d+)|ok|no)$/, async (ctx) => {
+        if (!isAdmin(ctx.from)) return ctx.answerCallbackQuery({ text: 'Только для админов', show_alert: true });
+        const rel = state.releases[ctx.match[1]];
+        if (!rel?.tasks) return ctx.answerCallbackQuery({ text: 'Релиз не найден', show_alert: true });
+        const what = ctx.match[2];
+        if (what === 'no') {
+            delete rel.liveSkip;
+            save();
+            await ctx.answerCallbackQuery();
+            return ctx.editMessageText('Отменено, в группу ничего не отправлено.').catch(() => {});
+        }
+        if (what.startsWith('t:')) {
+            const idx = Number(ctx.match[3]);
+            const skip = new Set(rel.liveSkip || []);
+            if (skip.has(idx)) skip.delete(idx);
+            else skip.add(idx);
+            rel.liveSkip = [...skip];
+            save();
+            await ctx.answerCallbackQuery();
+            return showLiveEditor(ctx, rel);
+        }
+        // ok: помечаем выбранные исключёнными и отправляем объявление
+        const skipped = editable(rel).filter(({ idx }) => (rel.liveSkip || []).includes(idx));
+        if (skipped.length === editable(rel).length) return ctx.answerCallbackQuery({ text: 'Все задачи убраны — отправлять нечего', show_alert: true });
+        await ctx.answerCallbackQuery();
+        await ctx.editMessageReplyMarkup({ reply_markup: new InlineKeyboard() }).catch(() => {});
+        for (const { task } of skipped) {
+            dropPrompts(rel, task);
+            task.status = 'excluded';
+            task.by = actor(ctx.from);
+            task.at = Date.now();
+            if (task.messageId) await refreshTask(rel, task);
+            journal(ctx.from, `исключил ${label(task)} (перед объявлением)`, rel);
+        }
+        delete rel.liveSkip;
+        if (skipped.length) await refreshSummary(rel);
+        await sendLive(ctx, rel);
+    });
+
+    async function sendLive(ctx, rel) {
         const shipped = rel.tasks.filter((t) => !OUT.includes(t.status));
         if (!shipped.length) return ctx.reply('Все задачи релиза исключены — объявлять нечего.');
 
